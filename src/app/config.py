@@ -3,18 +3,16 @@ from os.path import dirname, isfile, join
 
 from dotenv import load_dotenv
 
-ENV_FILE = join(dirname(dirname(__file__)),'config.env')
-
-if isfile(ENV_FILE):
-    load_dotenv(dotenv_path=ENV_FILE)
-
-
 class Config(object):
     DEBUG=True
     RESTFUL_JSON = {
     'ensure_ascii': False
     }
-    SQLALCHEMY_DATABASE_URI= f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_DATABASE_NAME')}"
+    SQLALCHEMY_DATABASE_URI= os.getenv('DATABASE_URL')
+    # trocar postgres por postgresql
+    indexPostgres = SQLALCHEMY_DATABASE_URI.index("postgres")
+    lenPostgres = 8
+    SQLALCHEMY_DATABASE_URI= "".join(["postgresql", SQLALCHEMY_DATABASE_URI[indexPostgres+lenPostgres:]])
     SQLALCHEMY_TRACK_MODIFICATIONS=False
     TASK_PAGE_SIZE = 6
 
