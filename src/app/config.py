@@ -19,6 +19,7 @@ class Config(object):
 class Production(Config):
     DEBUG=False
     TASK_PAGE_SIZE = 10
+    PROPAGATE_EXCEPTIONS = True
 
 class Development(Config):
     DEBUG=True

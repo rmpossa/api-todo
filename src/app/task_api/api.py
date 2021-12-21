@@ -1,6 +1,7 @@
+from app.auth.auth import requires_auth
 from app.models.task import Task
 from app.repositories.task_manager import TaskManager
-from flask import Blueprint
+from flask import Blueprint,_request_ctx_stack
 from flask_restful import Resource, Api, fields, marshal_with, reqparse, abort
 import argparse
 
@@ -44,44 +45,50 @@ parser_filter.add_argument('order', type=str)
 
 class TaskListResource(Resource):
         @marshal_with(task_fields)
+        @requires_auth
         def get(self):
             args = parser_list.parse_args()
             
-            return task_manager.list_all_tasks(args.done)
+            return task_manager.list_all_tasks(args.done, _request_ctx_stack.top.current_user['sub'])
 
         @marshal_with(task_fields)
+        @requires_auth
         def post(self):
             args = parser.parse_args()
             
-            task = task_manager.new_task(args.name, args.description, args.done)
+            task = task_manager.new_task(args.name, args.description, args.done, _request_ctx_stack.top.current_user['sub'])
 
             return {"id":task.id, "name":task.name, "description":task.description, "done":task.done}, 200            
 
 
 class TaskFilterResource(Resource):
         @marshal_with(resource_fields_filter)
+        @requires_auth
         def get(self):
             args = parser_filter.parse_args()
-            return task_manager.filter_tasks(args.term, args.page, args.sort, args.order)            
+            return task_manager.filter_tasks(args.term, args.page, args.sort, args.order, _request_ctx_stack.top.current_user['sub'])            
         
         
 class TaskResource(Resource):
-        @marshal_with(task_fields)
-        def get(self, task_id):
-            task = task_manager.get_task_by_id(task_id)
-             
-            return {"id": task.id, "name": task.name, "description": task.description, "done": task.done}
+        #@marshal_with(task_fields)
+        #@requires_auth
+        #def get(self, task_id):
+        #    task = task_manager.get_task_by_id(task_id)
+        #     
+        #    return {"id": task.id, "name": task.name, "description": task.description, "done": task.done}
 
         @marshal_with(task_fields)
+        @requires_auth
         def put(self, task_id):
             args = parser.parse_args()
 
-            task = task_manager.edit_task(task_id, args.name, args.description, args.done)
+            task = task_manager.edit_task(task_id, args.name, args.description, args.done, _request_ctx_stack.top.current_user['sub'])
 
             return {"id":task.id, "name":task.name, "description":task.description, "done":task.done}, 200            
 
+        @requires_auth
         def delete(self, task_id):
-            task_manager.remove_task(task_id)
+            task_manager.remove_task(task_id, _request_ctx_stack.top.current_user['sub'])
 
             return {"message": "Task was succesfully removed"}, 200
             

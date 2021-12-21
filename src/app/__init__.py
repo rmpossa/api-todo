@@ -13,6 +13,8 @@ def create_app():
 
     db.init_app(app)
 
+    from app.auth.auth import auth_bp
+    app.register_blueprint(auth_bp)
     from app.task_api.api import tasks_bp
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
 
